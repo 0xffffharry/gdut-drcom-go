@@ -86,6 +86,21 @@ func (d *Drcom) runWithContext() error {
 			return err
 		}
 	}
+	switch runtime.GOOS {
+	case "linux":
+		f, err := udpSocket.File()
+		if err != nil {
+			err = fmt.Errorf("get file fail: %s", err.Error())
+			d.logger.Fatal(d.Tag, err.Error())
+			return err
+		}
+		err = unix.SetsockoptInt(int(f.Fd()), unix.SOL_SOCKET, unix.SO_REUSEADDR, 1)
+		if err != nil {
+			err = fmt.Errorf("set socket option fail: %s", err.Error())
+			d.logger.Fatal(d.Tag, err.Error())
+			return err
+		}
+	}
 	defer func() {
 		if udpSocket != nil {
 			udpSocket.Close()
