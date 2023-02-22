@@ -20,6 +20,7 @@ type ConfigCore struct {
 	KeepAlive1Flag byte       `json:"keep_alive1_flag"`
 	EnableCrypt    bool       `json:"enable_crypt"`
 	BindDevice     string     `json:"bind_device"`
+	BindToAddr     bool       `json:"bind_to_addr"`
 }
 
 func (c *ConfigCore) UnmarshalJSON(data []byte) error {

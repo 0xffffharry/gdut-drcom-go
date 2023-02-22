@@ -14,6 +14,7 @@ type Drcom struct {
 	KeepAlive1Flag byte
 	EnableCrypt    bool
 	BindDevice     string
+	BindToAddr     bool
 	//
 	ctx    context.Context
 	logger *log.Logger

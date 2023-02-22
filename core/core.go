@@ -8,6 +8,7 @@ import (
 	"golang.org/x/sys/unix"
 	"math/rand"
 	"net"
+	"net/netip"
 	"os"
 	"runtime"
 	"time"
@@ -49,9 +50,73 @@ func (d *Drcom) runWithContext() error {
 	remoteAddr.IP = d.RemoteIP.AsSlice()
 	remoteAddr.Port = int(d.RemotePort)
 	if d.RemoteIP.Is4() {
-		localAddr.IP = net.IPv4zero
+		if d.BindDevice != "" && d.BindToAddr {
+			ifrs, err := net.Interfaces()
+			if err != nil {
+				err = fmt.Errorf("get interfaces fail: %s", err.Error())
+				d.logger.Fatal(d.Tag, err.Error())
+				return err
+			}
+			for _, ifr := range ifrs {
+				if ifr.Name != d.BindDevice {
+					continue
+				}
+				addrs, err := ifr.Addrs()
+				if err != nil {
+					err = fmt.Errorf("get interface addresses fail: %s", err.Error())
+					d.logger.Fatal(d.Tag, err.Error())
+					return err
+				}
+				for _, addr := range addrs {
+					prefix, err := netip.ParsePrefix(addr.String())
+					if err != nil {
+						err = fmt.Errorf("parse interface address fail: %s", err.Error())
+						d.logger.Fatal(d.Tag, err.Error())
+						return err
+					}
+					if prefix.Addr().Is4() {
+						localAddr.IP = prefix.Addr().AsSlice()
+						break
+					}
+				}
+			}
+		} else {
+			localAddr.IP = net.IPv4zero
+		}
 	} else if d.RemoteIP.Is6() {
-		localAddr.IP = net.IPv6zero
+		if d.BindDevice != "" && d.BindToAddr {
+			ifrs, err := net.Interfaces()
+			if err != nil {
+				err = fmt.Errorf("get interfaces fail: %s", err.Error())
+				d.logger.Fatal(d.Tag, err.Error())
+				return err
+			}
+			for _, ifr := range ifrs {
+				if ifr.Name != d.BindDevice {
+					continue
+				}
+				addrs, err := ifr.Addrs()
+				if err != nil {
+					err = fmt.Errorf("get interface addresses fail: %s", err.Error())
+					d.logger.Fatal(d.Tag, err.Error())
+					return err
+				}
+				for _, addr := range addrs {
+					prefix, err := netip.ParsePrefix(addr.String())
+					if err != nil {
+						err = fmt.Errorf("parse interface address fail: %s", err.Error())
+						d.logger.Fatal(d.Tag, err.Error())
+						return err
+					}
+					if prefix.Addr().Is6() {
+						localAddr.IP = prefix.Addr().AsSlice()
+						break
+					}
+				}
+			}
+		} else {
+			localAddr.IP = net.IPv6zero
+		}
 	} else {
 		err = fmt.Errorf("invalid remote ip: %s", d.RemoteIP.String())
 		d.logger.Fatal(d.Tag, err.Error())
@@ -73,13 +138,15 @@ func (d *Drcom) runWithContext() error {
 				d.logger.Fatal(d.Tag, err.Error())
 				return err
 			}
-			err = unix.BindToDevice(int(f.Fd()), d.BindDevice)
-			if err != nil {
-				err = fmt.Errorf("bind to device fail: %s", err.Error())
-				d.logger.Fatal(d.Tag, err.Error())
-				return err
+			if !d.BindToAddr {
+				err = unix.BindToDevice(int(f.Fd()), d.BindDevice)
+				if err != nil {
+					err = fmt.Errorf("bind to device fail: %s", err.Error())
+					d.logger.Fatal(d.Tag, err.Error())
+					return err
+				}
+				d.logger.Info(d.Tag, fmt.Sprintf("bind to device: %s", d.BindDevice))
 			}
-			d.logger.Info(d.Tag, fmt.Sprintf("bind to device: %s", d.BindDevice))
 		default:
 			err = fmt.Errorf("bind device not support")
 			d.logger.Fatal(d.Tag, err.Error())

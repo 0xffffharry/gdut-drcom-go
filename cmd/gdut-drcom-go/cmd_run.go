@@ -32,6 +32,7 @@ var (
 	paramKeepAlive1Flag uint8
 	paramEnableCrypt    bool
 	paramBindDevice     string
+	paramBindToAddr     bool
 	paramLogFile        string
 	paramDebug          bool
 )
@@ -44,6 +45,7 @@ func init() {
 	runCommand.Flags().Uint8VarP(&paramKeepAlive1Flag, "keep-alive1-flag", "k", 0xdc, "KeepAlive1 Flag")
 	runCommand.Flags().BoolVarP(&paramEnableCrypt, "enable-crypt", "e", false, "Enable Crypt")
 	runCommand.Flags().StringVarP(&paramBindDevice, "bind-device", "b", "", "Bind Device")
+	runCommand.Flags().BoolVarP(&paramBindToAddr, "bind-to-addr", "a", false, "Bind To Addr")
 	runCommand.Flags().StringVarP(&paramLogFile, "log-file", "f", "", "Log File")
 	runCommand.Flags().BoolVarP(&paramDebug, "debug", "d", false, "Debug Mode")
 	RootCommand.AddCommand(runCommand)
@@ -101,6 +103,7 @@ func runSimple() {
 		KeepAlive1Flag: paramKeepAlive1Flag,
 		EnableCrypt:    paramEnableCrypt,
 		BindDevice:     paramBindDevice,
+		BindToAddr:     paramBindToAddr,
 	}
 	d.SetLogger(logger)
 	err = d.RunWithContext(ctx)
@@ -150,6 +153,7 @@ func runMulti() {
 			KeepAlive1Flag: d.KeepAlive1Flag,
 			EnableCrypt:    d.EnableCrypt,
 			BindDevice:     d.BindDevice,
+			BindToAddr:     d.BindToAddr,
 		}
 		c.SetLogger(logger)
 		wg.Add(1)
