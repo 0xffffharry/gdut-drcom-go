@@ -1,3 +1,6 @@
 package main
 
-const Version = "v0.0.1-beta4"
+const (
+	Version = "v0.0.1"
+	Author  = "yaott"
+)

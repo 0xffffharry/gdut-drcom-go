@@ -90,7 +90,7 @@ func runSimple() {
 	if paramDebug {
 		logger.SetDebug(true)
 	}
-	logger.Info("global", fmt.Sprintf("gdut-drcom-go %s", Version))
+	logger.Info("global", fmt.Sprintf("gdut-drcom-go %s (build from %s)", Version, Author))
 	defer logger.Info("global", "Bye")
 	go listenSignal(func() {
 		logger.Warn("global", "receive signal, exit")
@@ -138,7 +138,7 @@ func runMulti() {
 	if cfg.Debug {
 		logger.SetDebug(true)
 	}
-	logger.Info("global", fmt.Sprintf("gdut-drcom-go %s", Version))
+	logger.Info("global", fmt.Sprintf("gdut-drcom-go %s (build from %s)", Version, Author))
 	defer logger.Info("global", "Bye")
 	go listenSignal(func() {
 		logger.Warn("global", "receive signal, exit")
